@@ -36,3 +36,14 @@ git clone https://github.com/yourusername/loan-prediction-app.git
 cd loan-prediction-app
 pip install -r requirements.txt
 python app.py
+```
+
+
+### 📌 Use Case
+This project is ideal for:
+Data science students practicing ML integration
+Demonstrating frontend + ML backend deployment
+Showcasing in resumes or LinkedIn posts
+### 🙋‍♂️ Author
+Patel Vrund Kalpeshbhai
+B.Tech in Data Science
