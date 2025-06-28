@@ -24,7 +24,7 @@ Each model’s prediction is displayed individually, followed by a **final decis
 ### 🧾 Features
 - User-friendly HTML form with dropdowns and validations
 - Handles both categorical and numerical input
-- Attractive UI designed
+- Attractive UI design
 - Button to easily submit entry
 - Emoji icons to indicate prediction result (😄 Approved / 😓 Rejected)
 
