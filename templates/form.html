@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Loan Eligibility Prediction</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #89f7fe, #66a6ff);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 50px;
+    }
+
+    .container {
+      background: #ffffff;
+      padding: 40px 60px;
+      border-radius: 20px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      width: 750px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #222;
+      margin-bottom: 40px;
+      font-size: 28px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .form-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 30px;
+    }
+
+    .form-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #444;
+    }
+
+    select,
+    input[type="number"] {
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      background-color: #fdfdfd;
+    }
+
+    select:invalid {
+      color: #999;
+    }
+
+    input[type="submit"] {
+      margin-top: 20px;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 12px;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #43a047;
+    }
+
+    .results {
+      margin-top: 40px;
+      background: #fff8fc;
+      padding: 25px;
+      border-left: 6px solid #4CAF50;
+      border-radius: 12px;
+    }
+
+    .result-approved {
+      color: #28a745;
+    }
+
+    .result-rejected {
+      color: #dc3545;
+    }
+
+    .final-result {
+      margin-bottom: 30px;
+      padding: 20px;
+      background-color: #e3f2fd;
+      border-left: 5px solid #0a58ca;
+      border-radius: 10px;
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .btn-reset {
+      margin-top: 30px;
+      padding: 16px 28px;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 10px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      transition: background 0.3s;
+    }
+
+    .btn-reset:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📄 Loan Eligibility Prediction Form</h2>
+
+    {% if not result_RF %}
+    <form action="/predict" method="post">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Gender</label>
+          <select name="Gender" required>
+            <option disabled selected value="">-- Select Gender --</option>
+            <option value="Male">♂️ Male</option>
+            <option value="Female">♀️ Female</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Married</label>
+          <select name="Married" required>
+            <option disabled selected value="">-- Select --</option>
+            <option value="Yes">💍 Yes</option>
+            <option value="No">🚫 No</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Education</label>
+          <select name="Education" required>
+            <option disabled selected value="">-- Select --</option>
+            <option value="Graduate">🎓 Graduate</option>
+            <option value="Not Graduate">📘 Not Graduate</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Self Employed</label>
+          <select name="Self_Employed" required>
+            <option disabled selected value="">-- Select --</option>
+            <option value="Yes">🧑‍💼 Yes</option>
+            <option value="No">👔 No</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Applicant Income</label>
+          <input type="number" name="ApplicantIncome" min="0" required />
+        </div>
+        <div class="form-group">
+          <label>Coapplicant Income</label>
+          <input type="number" name="CoapplicantIncome" min="0" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Loan Amount</label>
+          <input type="number" name="LoanAmount" min="0" required />
+        </div>
+        <div class="form-group">
+          <label>Loan Amount Term</label>
+          <input type="number" name="Loan_Amount_Term" min="0" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Credit History</label>
+          <select name="Credit_History" required>
+            <option disabled selected value="">-- Select --</option>
+            <option value="1">✅ 1 (Good)</option>
+            <option value="0">❌ 0 (Bad)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Property Area</label>
+          <select name="Property_Area" required>
+            <option disabled selected value="">-- Select --</option>
+            <option value="Urban">🏙️ Urban</option>
+            <option value="Semiurban">🏡 Semiurban</option>
+            <option value="Rural">🌾 Rural</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Dependents</label>
+        <select name="Dependents" required>
+          <option disabled selected value="">-- Select --</option>
+          <option value="0">0 👶</option>
+          <option value="1">1 👦</option>
+          <option value="2">2 🧒🧒</option>
+          <option value="3+">3+ 👨‍👩‍👧‍👦</option>
+        </select>
+      </div>
+      <input type="submit" value="🚀 Predict" />
+    </form>
+    {% endif %}
+
+    {% if result_RF %}
+    <div class="results">
+      <div class="final-result">
+        🧮 Final Prediction:<br>
+        {% if 'Approved' in result_final %}
+        🎉 <span class="result-approved">{{ result_final }} 😄</span>
+        {% else %}
+        😓 <span class="result-rejected">{{ result_final }}</span>
+        {% endif %}
+      </div>
+
+      <h3 class="{{ 'result-approved' if 'Approved' in result_RF else 'result-rejected' }}">🌳 Random Forest: {{ result_RF }}</h3>
+      <h3 class="{{ 'result-approved' if 'Approved' in result_KNN else 'result-rejected' }}">🤖 KNN: {{ result_KNN }}</h3>
+      <h3 class="{{ 'result-approved' if 'Approved' in result_SVC else 'result-rejected' }}">📐 SVC: {{ result_SVC }}</h3>
+      <h3 class="{{ 'result-approved' if 'Approved' in result_LR else 'result-rejected' }}">📊 Logistic Regression: {{ result_LR }}</h3>
+
+      <form action="/" method="get">
+        <button class="btn-reset" type="submit">🔁 Predict Again</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+</body>
+</html>
+
+
+
+
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Loan Eligibility Prediction</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #89f7fe, #66a6ff);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 50px;
+    }
+
+    .container {
+      background: #ffffff;
+      padding: 40px 60px;
+      border-radius: 20px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      width: 750px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #222;
+      margin-bottom: 40px;
+      font-size: 28px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+    }
+
+    .form-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 30px;
+    }
+
+    .form-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #444;
+    }
+
+    select,
+    input[type="number"] {
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      background-color: #fdfdfd;
+    }
+
+    select:invalid {
+      color: #999;
+    }
+
+    input[type="submit"] {
+      margin-top: 20px;
+      padding: 16px;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 12px;
+      border: none;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #43a047;
+    }
+
+    .results {
+      margin-top: 40px;
+      background: #fff8fc;
+      padding: 25px;
+      border-left: 6px solid #4CAF50;
+      border-radius: 12px;
+    }
+
+    .result-approved {
+      color: #28a745;
+    }
+
+    .result-rejected {
+      color: #dc3545;
+    }
+
+    .final-result {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #e3f2fd;
+      border-left: 5px solid #0a58ca;
+      border-radius: 10px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📄 Loan Eligibility Prediction Form</h2>
+
+    {% if not result_RF %}
+    <form action="/predict" method="post">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Gender</label>
+          <select name="Gender" required>
+            <option disabled selected value="">-- Select Gender --</option>
+            <option value="Male">♂️ Male</option>
+            <option value="Female">♀️ Female</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Married</label>
+          <select name="Married" required>
+            <option disabled selected value="">-- Select --</option>
+            <option value="Yes">💍 Yes</option>
+            <option value="No">🚫 No</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Education</label>
+          <select name="Education" required>
+            <option disabled selected value="">-- Select --</option>
+            <option value="Graduate">🎓 Graduate</option>
+            <option value="Not Graduate">📘 Not Graduate</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Self Employed</label>
+          <select name="Self_Employed" required>
+            <option disabled selected value="">-- Select --</option>
+            <option value="Yes">🧑‍💼 Yes</option>
+            <option value="No">👔 No</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Applicant Income</label>
+          <input type="number" name="ApplicantIncome" min="0" required />
+        </div>
+        <div class="form-group">
+          <label>Coapplicant Income</label>
+          <input type="number" name="CoapplicantIncome" min="0" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Loan Amount</label>
+          <input type="number" name="LoanAmount" min="0" required />
+        </div>
+        <div class="form-group">
+          <label>Loan Amount Term</label>
+          <input type="number" name="Loan_Amount_Term" min="0" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Credit History</label>
+          <select name="Credit_History" required>
+            <option disabled selected value="">-- Select --</option>
+            <option value="1">✅ 1 (Good)</option>
+            <option value="0">❌ 0 (Bad)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Property Area</label>
+          <select name="Property_Area" required>
+            <option disabled selected value="">-- Select --</option>
+            <option value="Urban">🏙️ Urban</option>
+            <option value="Semiurban">🏡 Semiurban</option>
+            <option value="Rural">🌾 Rural</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Dependents</label>
+        <select name="Dependents" required>
+          <option disabled selected value="">-- Select --</option>
+          <option value="0">0 👶</option>
+          <option value="1">1 👦</option>
+          <option value="2">2 🧒🧒</option>
+          <option value="3+">3+ 👨‍👩‍👧‍👦</option>
+        </select>
+      </div>
+
+      <input type="submit" value="🚀 Predict" />
+    </form>
+    {% endif %}
+
+    {% if result_RF %}
+    <div class="results">
+      <h3 class="{{ 'result-approved' if 'Approved' in result_RF else 'result-rejected' }}">🌳 Random Forest: {{ result_RF }}</h3>
+      <h3 class="{{ 'result-approved' if 'Approved' in result_KNN else 'result-rejected' }}">🤖 KNN: {{ result_KNN }}</h3>
+      <h3 class="{{ 'result-approved' if 'Approved' in result_SVC else 'result-rejected' }}">📐 SVC: {{ result_SVC }}</h3>
+      <h3 class="{{ 'result-approved' if 'Approved' in result_LR else 'result-rejected' }}">📊 Logistic Regression: {{ result_LR }}</h3>
+
+      <div class="final-result">
+        <strong>🧮 Final Prediction:</strong><br>
+        {% if 'Approved' in result_final %}
+        🎉 <span class="result-approved">{{ result_final }} 😄</span>
+        {% else %}
+        😓 <span class="result-rejected">{{ result_final }}</span>
+        {% endif %}
+      </div>
+
+      <form action="/" method="get">
+        <button class="btn-reset" type="submit">🔁 Predict Again</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+</body>
+</html> -->
